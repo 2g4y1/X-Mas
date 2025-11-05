@@ -137,9 +137,17 @@ public class PlayerStats {
         stats.setBadGiftsCollected((int) data.getOrDefault("badGiftsCollected", 0));
         stats.setConsecutiveGoodGifts((int) data.getOrDefault("consecutiveGoodGifts", 0));
         stats.setMaxConsecutiveGoodGifts((int) data.getOrDefault("maxConsecutiveGoodGifts", 0));
-        stats.setFirstTreeTimestamp((long) data.getOrDefault("firstTreeTimestamp", 0L));
-        stats.setFirstMagicTreeTimestamp((long) data.getOrDefault("firstMagicTreeTimestamp", 0L));
-        stats.setLastGiftTimestamp((long) data.getOrDefault("lastGiftTimestamp", 0L));
+        
+        // Safe conversion from Number to long (handles both Integer and Long)
+        Object firstTreeTime = data.getOrDefault("firstTreeTimestamp", 0L);
+        stats.setFirstTreeTimestamp(firstTreeTime instanceof Number ? ((Number) firstTreeTime).longValue() : 0L);
+        
+        Object firstMagicTime = data.getOrDefault("firstMagicTreeTimestamp", 0L);
+        stats.setFirstMagicTreeTimestamp(firstMagicTime instanceof Number ? ((Number) firstMagicTime).longValue() : 0L);
+        
+        Object lastGiftTime = data.getOrDefault("lastGiftTimestamp", 0L);
+        stats.setLastGiftTimestamp(lastGiftTime instanceof Number ? ((Number) lastGiftTime).longValue() : 0L);
+        
         stats.setHasReceivedChristmasLegendary((boolean) data.getOrDefault("hasReceivedChristmasLegendary", false));
         
         @SuppressWarnings("unchecked")

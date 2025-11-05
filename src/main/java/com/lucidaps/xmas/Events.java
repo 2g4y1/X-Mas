@@ -13,6 +13,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -31,6 +32,16 @@ class Events implements Listener {
 
     public void registerListener() {
         Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        // Unlock X-Mas Crystal recipe for new players
+        Player player = event.getPlayer();
+        NamespacedKey recipeKey = new NamespacedKey(Main.getInstance(), "xmas_crystal");
+        if (!player.hasDiscoveredRecipe(recipeKey)) {
+            player.discoverRecipe(recipeKey);
+        }
     }
 
 

@@ -5,6 +5,7 @@ import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -122,8 +123,13 @@ public class Main extends JavaPlugin implements Listener {
         new PlayParticlesTask(this).runTaskTimerAsynchronously(this, 5, PARTICLES_DELAY);
         XMas.XMAS_CRYSTAL = new ItemMaker(Material.EMERALD, LocaleManager.CRYSTAL_NAME, LocaleManager.CRYSTAL_LORE).make();
 
+        NamespacedKey recipeKey = new NamespacedKey(this, "xmas_crystal");
         ShapedRecipe grinderRecipe;
-        grinderRecipe = new ShapedRecipe(new NamespacedKey(this, "xmas"), XMas.XMAS_CRYSTAL).shape("#d#", "ded", "#d#").setIngredient('d', Material.DIAMOND).setIngredient('e', Material.EMERALD);
+        grinderRecipe = new ShapedRecipe(recipeKey, XMas.XMAS_CRYSTAL)
+            .shape("#d#", "ded", "#d#")
+            .setIngredient('d', Material.DIAMOND)
+            .setIngredient('e', Material.EMERALD);
+        
         Iterator<Recipe> recipes = getServer().recipeIterator();
         boolean registered = false;
         while (recipes.hasNext()) {
@@ -135,9 +141,16 @@ public class Main extends JavaPlugin implements Listener {
 
         }
         try {
-            if (!registered)
+            if (!registered) {
                 getServer().addRecipe(grinderRecipe);
-        } catch (Exception ignored) {
+                
+                // Unlock recipe for all online players
+                for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                    onlinePlayer.discoverRecipe(recipeKey);
+                }
+            }
+        } catch (Exception e) {
+            getLogger().warning("Failed to register recipe: " + e.getMessage());
         }
         
         // Register command
