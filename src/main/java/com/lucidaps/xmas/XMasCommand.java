@@ -237,7 +237,7 @@ public class XMasCommand implements CommandExecutor, TabCompleter {
             case "trees":
             default:
                 topPlayers = StatsManager.getTopPlayersByTrees(10);
-                title = "Top 10 - Meiste Bäume";
+                title = "Top 10 - Meiste aktive Bäume";
                 break;
         }
         
@@ -262,7 +262,7 @@ public class XMasCommand implements CommandExecutor, TabCompleter {
                         value = minutes + " Minuten";
                         break;
                     default:
-                        value = stats.getTotalTreesPlanted() + " Bäume";
+                        value = stats.getCurrentTreeCount() + " aktive Bäume";
                         break;
                 }
                 

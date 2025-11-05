@@ -42,6 +42,21 @@ class Events implements Listener {
         if (!player.hasDiscoveredRecipe(recipeKey)) {
             player.discoverRecipe(recipeKey);
         }
+        
+        // Notify player if they haven't claimed their crystal yet
+        if (Main.inProgress) {
+            PlayerStats stats = StatsManager.getPlayerStats(player.getUniqueId());
+            if (!stats.hasClaimedCrystal()) {
+                // Delayed message so it doesn't get lost in join messages
+                Bukkit.getScheduler().runTaskLater(Main.getInstance(), () -> {
+                    TextUtils.sendMessage(player, ChatColor.GOLD + "═══════════════════════════════════");
+                    TextUtils.sendMessage(player, ChatColor.GREEN + "" + ChatColor.BOLD + "🎄 WEIHNACHTSEVENT 🎄");
+                    TextUtils.sendMessage(player, ChatColor.YELLOW + "Du kannst dir einen " + ChatColor.AQUA + "kostenlosen Weihnachtskristall" + ChatColor.YELLOW + " abholen!");
+                    TextUtils.sendMessage(player, ChatColor.GRAY + "Klicke einfach mit Rechtsklick auf einen beliebigen Weihnachtsbaum.");
+                    TextUtils.sendMessage(player, ChatColor.GOLD + "═══════════════════════════════════");
+                }, 40L); // 2 seconds delay
+            }
+        }
     }
 
 
@@ -83,6 +98,22 @@ class Events implements Listener {
             if (MagicTree.isBlockBelongs(block)) {
                 event.setCancelled(true);
                 MagicTree tree = MagicTree.getTreeByBlock(block);
+                
+                // Check if player can claim their first crystal (Right-Click on any tree)
+                if (Main.inProgress) {
+                    PlayerStats stats = StatsManager.getPlayerStats(player.getUniqueId());
+                    if (!stats.hasClaimedCrystal()) {
+                        // Give player one crystal
+                        player.getInventory().addItem(XMas.XMAS_CRYSTAL.clone());
+                        stats.setHasClaimedCrystal(true);
+                        StatsManager.savePlayerStats(stats);
+                        
+                        TextUtils.sendMessage(player, ChatColor.GREEN + "Du hast deinen einmaligen Weihnachtskristall erhalten! 🎄");
+                        Effects.TREE_SWAG.playEffect(block.getLocation());
+                        return;
+                    }
+                }
+                
                 if (Main.inProgress) {
                     if (tree.getLevel().hasNext()) {
                         if (tree.canLevelUp()) {

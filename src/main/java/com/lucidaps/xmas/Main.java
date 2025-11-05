@@ -165,6 +165,22 @@ public class Main extends JavaPlugin implements Listener {
             e.printStackTrace();
         }
         
+        // Notify online players about unclaimed crystals
+        if (inProgress) {
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                    PlayerStats stats = StatsManager.getPlayerStats(onlinePlayer.getUniqueId());
+                    if (!stats.hasClaimedCrystal()) {
+                        TextUtils.sendMessage(onlinePlayer, ChatColor.GOLD + "═══════════════════════════════════");
+                        TextUtils.sendMessage(onlinePlayer, ChatColor.GREEN + "" + ChatColor.BOLD + "🎄 WEIHNACHTSEVENT 🎄");
+                        TextUtils.sendMessage(onlinePlayer, ChatColor.YELLOW + "Du kannst dir einen " + ChatColor.AQUA + "kostenlosen Weihnachtskristall" + ChatColor.YELLOW + " abholen!");
+                        TextUtils.sendMessage(onlinePlayer, ChatColor.GRAY + "Klicke einfach mit Rechtsklick auf einen beliebigen Weihnachtsbaum.");
+                        TextUtils.sendMessage(onlinePlayer, ChatColor.GOLD + "═══════════════════════════════════");
+                    }
+                }
+            }, 60L); // 3 seconds after plugin load
+        }
+        
         TextUtils.sendConsoleMessage(LocaleManager.PLUGIN_ENABLED);
     }
 
@@ -222,6 +238,20 @@ public class Main extends JavaPlugin implements Listener {
         LUCK_CHANCE = config.getInt("xmas.luck.chance") / 100.0f;
 
         TextUtils.sendConsoleMessage("Configuration reloaded!");
+        
+        // Notify online players about unclaimed crystals after reload
+        if (inProgress) {
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                PlayerStats stats = StatsManager.getPlayerStats(onlinePlayer.getUniqueId());
+                if (!stats.hasClaimedCrystal()) {
+                    TextUtils.sendMessage(onlinePlayer, ChatColor.GOLD + "═══════════════════════════════════");
+                    TextUtils.sendMessage(onlinePlayer, ChatColor.GREEN + "" + ChatColor.BOLD + "🎄 WEIHNACHTSEVENT 🎄");
+                    TextUtils.sendMessage(onlinePlayer, ChatColor.YELLOW + "Du kannst dir einen " + ChatColor.AQUA + "kostenlosen Weihnachtskristall" + ChatColor.YELLOW + " abholen!");
+                    TextUtils.sendMessage(onlinePlayer, ChatColor.GRAY + "Klicke einfach mit Rechtsklick auf einen beliebigen Weihnachtsbaum.");
+                    TextUtils.sendMessage(onlinePlayer, ChatColor.GOLD + "═══════════════════════════════════");
+                }
+            }
+        }
     }
 
     public void addGiftItem(ItemStack item) {
@@ -320,7 +350,7 @@ public class Main extends JavaPlugin implements Listener {
         Map<Material, Integer> smallLevelUp = TreeSerializer.convertRequirementsMap(lvlups.getConfigurationSection("small_tree.lvlup").getValues(false));
         Map<Material, Integer> treeLevelUp = TreeSerializer.convertRequirementsMap(lvlups.getConfigurationSection("tree.lvlup").getValues(false));
 
-        TreeLevel.MAGIC_TREE = new TreeLevel("magic_tree", Effects.TREE_WHITE_AMBIENT, Effects.TREE_SWAG, null, null, magic_delay, Collections.emptyMap(), new StructureTemplate(new HashMap<Vector, Material>() {
+        TreeLevel.MAGIC_TREE = new TreeLevel("magic_tree", Effects.AMBIENT_SNOW, Effects.TREE_SWAG, null, null, magic_delay, Collections.emptyMap(), new StructureTemplate(new HashMap<Vector, Material>() {
             private static final long serialVersionUID = 1L;
 
             {
@@ -389,7 +419,7 @@ public class Main extends JavaPlugin implements Listener {
             }
         }));
 
-        TreeLevel.SMALL_TREE = new TreeLevel("small_tree", Effects.AMBIENT_PORTAL, Effects.TREE_RED_SWAG, null, TreeLevel.TREE, small_delay, smallLevelUp, new StructureTemplate(new HashMap<Vector, Material>() {
+        TreeLevel.SMALL_TREE = new TreeLevel("small_tree", Effects.AMBIENT_SNOW, Effects.TREE_RED_SWAG, null, TreeLevel.TREE, small_delay, smallLevelUp, new StructureTemplate(new HashMap<Vector, Material>() {
             private static final long serialVersionUID = 1L;
 
             {
@@ -416,7 +446,7 @@ public class Main extends JavaPlugin implements Listener {
             }
         }));
 
-        TreeLevel.SAPLING = new TreeLevel("sapling", Effects.AMBIENT_SAPLING, null, null, TreeLevel.SMALL_TREE, sapling_delay, saplingLevelUp, new StructureTemplate(new HashMap<Vector, Material>() {
+        TreeLevel.SAPLING = new TreeLevel("sapling", Effects.AMBIENT_SNOW, null, null, TreeLevel.SMALL_TREE, sapling_delay, saplingLevelUp, new StructureTemplate(new HashMap<Vector, Material>() {
             private static final long serialVersionUID = 1L;
 
             {

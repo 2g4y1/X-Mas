@@ -101,7 +101,8 @@ public class StatsManager {
 
     public static List<PlayerStats> getTopPlayersByTrees(int limit) {
         List<PlayerStats> statsList = new ArrayList<>(playerStatsMap.values());
-        statsList.sort((a, b) -> Integer.compare(b.getTotalTreesPlanted(), a.getTotalTreesPlanted()));
+        // Sort by currentTreeCount (active trees only), not totalTreesPlanted
+        statsList.sort((a, b) -> Integer.compare(b.getCurrentTreeCount(), a.getCurrentTreeCount()));
         return statsList.subList(0, Math.min(limit, statsList.size()));
     }
 

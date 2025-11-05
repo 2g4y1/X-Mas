@@ -15,6 +15,7 @@ public class PlayerStats {
     private long firstMagicTreeTimestamp;
     private long lastGiftTimestamp;
     private boolean hasReceivedChristmasLegendary;
+    private boolean hasClaimedCrystal;
     private final Set<String> unlockedAchievements;
 
     public PlayerStats(UUID playerUUID) {
@@ -30,6 +31,7 @@ public class PlayerStats {
         this.firstMagicTreeTimestamp = 0;
         this.lastGiftTimestamp = 0;
         this.hasReceivedChristmasLegendary = false;
+        this.hasClaimedCrystal = false;
         this.unlockedAchievements = new HashSet<>();
     }
 
@@ -46,6 +48,7 @@ public class PlayerStats {
     public long getFirstMagicTreeTimestamp() { return firstMagicTreeTimestamp; }
     public long getLastGiftTimestamp() { return lastGiftTimestamp; }
     public boolean hasReceivedChristmasLegendary() { return hasReceivedChristmasLegendary; }
+    public boolean hasClaimedCrystal() { return hasClaimedCrystal; }
     public Set<String> getUnlockedAchievements() { return new HashSet<>(unlockedAchievements); }
 
     // Setters
@@ -60,6 +63,7 @@ public class PlayerStats {
     public void setFirstMagicTreeTimestamp(long timestamp) { this.firstMagicTreeTimestamp = timestamp; }
     public void setLastGiftTimestamp(long timestamp) { this.lastGiftTimestamp = timestamp; }
     public void setHasReceivedChristmasLegendary(boolean received) { this.hasReceivedChristmasLegendary = received; }
+    public void setHasClaimedCrystal(boolean claimed) { this.hasClaimedCrystal = claimed; }
 
     // Actions
     public void incrementTreesPlanted() {
@@ -122,6 +126,7 @@ public class PlayerStats {
         data.put("firstMagicTreeTimestamp", firstMagicTreeTimestamp);
         data.put("lastGiftTimestamp", lastGiftTimestamp);
         data.put("hasReceivedChristmasLegendary", hasReceivedChristmasLegendary);
+        data.put("hasClaimedCrystal", hasClaimedCrystal);
         data.put("achievements", new ArrayList<>(unlockedAchievements));
         return data;
     }
@@ -149,6 +154,7 @@ public class PlayerStats {
         stats.setLastGiftTimestamp(lastGiftTime instanceof Number ? ((Number) lastGiftTime).longValue() : 0L);
         
         stats.setHasReceivedChristmasLegendary((boolean) data.getOrDefault("hasReceivedChristmasLegendary", false));
+        stats.setHasClaimedCrystal((boolean) data.getOrDefault("hasClaimedCrystal", false));
         
         @SuppressWarnings("unchecked")
         List<String> achievements = (List<String>) data.getOrDefault("achievements", new ArrayList<>());
