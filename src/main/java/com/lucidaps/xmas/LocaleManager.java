@@ -88,12 +88,23 @@ public class LocaleManager {
             throw new NullPointerException("Locale not loaded");
 
         try {
-            String message = ChatColor.translateAlternateColorCodes('&', locale.getString(path));
+            String rawString = locale.getString(path);
+            if (rawString == null) {
+                TextUtils.sendConsoleMessage(ChatColor.DARK_RED + "Unable to find '" + path + "' in locale " + Main.getInstance().getConfig().getString("core.locale") + ". Bad File?");
+                TextUtils.sendConsoleMessage(ChatColor.DARK_RED + "Using default locale to get value");
+                rawString = def_locale.getString(path);
+                if (rawString == null) {
+                    TextUtils.sendConsoleMessage(ChatColor.DARK_RED + "CRITICAL: '" + path + "' not found in default locale either! Returning placeholder.");
+                    return "[MISSING: " + path + "]";
+                }
+            }
+            String message = ChatColor.translateAlternateColorCodes('&', rawString);
             return message.contains("_UNUSED") ? null : message;
         } catch (NullPointerException e) {
-            TextUtils.sendConsoleMessage(ChatColor.DARK_RED + "Unable to find '" + path + "' in locale " + Main.getInstance().getConfig().getString("core.locale") + ". Bad File?");
+            TextUtils.sendConsoleMessage(ChatColor.DARK_RED + "NullPointerException for path '" + path + "' in locale " + Main.getInstance().getConfig().getString("core.locale"));
             TextUtils.sendConsoleMessage(ChatColor.DARK_RED + "Using default locale to get value");
-            return def_locale.getString(path);
+            String fallback = def_locale.getString(path);
+            return fallback != null ? ChatColor.translateAlternateColorCodes('&', fallback) : "[MISSING: " + path + "]";
         }
     }
 
