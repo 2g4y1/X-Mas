@@ -57,6 +57,10 @@ public class TreeLevel {
         return levelName;
     }
 
+    public String getName() {
+        return levelName;
+    }
+
     public TreeLevel getNextLevel() {
         return nextLevel;
     }

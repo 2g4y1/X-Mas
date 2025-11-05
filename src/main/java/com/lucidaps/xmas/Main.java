@@ -36,7 +36,7 @@ public class Main extends JavaPlugin implements Listener {
     static boolean autoEnd;
     static long endTime;
     static boolean inProgress;
-    private static int UPDATE_SPEED;
+    public static int UPDATE_SPEED;
     private static int PARTICLES_DELAY;
     private static List<String> heads;
     private static Plugin plugin;
@@ -61,6 +61,9 @@ public class Main extends JavaPlugin implements Listener {
         this.saveDefaults();
         config = getConfig();
         locale = config.getString("core.locale");
+
+        // Initialize stats manager
+        StatsManager.initialize(getDataFolder());
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy kk-mm-ss");
         inProgress = config.getBoolean("core.plugin-enabled", true);
@@ -113,6 +116,8 @@ public class Main extends JavaPlugin implements Listener {
         LUCK_CHANCE_ENABLED = config.getBoolean("xmas.luck.enabled");
         LUCK_CHANCE = (float) config.getInt("xmas.luck.chance") / 100;
         new Events().registerListener();
+        new GUIListener(); // Register GUI listener
+        Bukkit.getPluginManager().registerEvents(new GUIListener(), this);
         new MagicTask(this).runTaskTimer(this, 5, UPDATE_SPEED);
         new PlayParticlesTask(this).runTaskTimerAsynchronously(this, 5, PARTICLES_DELAY);
         XMas.XMAS_CRYSTAL = new ItemMaker(Material.EMERALD, LocaleManager.CRYSTAL_NAME, LocaleManager.CRYSTAL_LORE).make();
@@ -254,6 +259,9 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        // Save all stats before shutdown
+        StatsManager.saveAllStats();
+        
         if (XMas.getAllTrees().size() > 0)
             for (MagicTree tree : XMas.getAllTrees()) {
                 tree.unbuild();

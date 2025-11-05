@@ -113,7 +113,17 @@ public class MagicTree {
             if (level.getGiftDelay() > 0) {
                 if (presentCounter == 0) {
                     spawnPresent();
-                    presentCounter = (long) ((level.getGiftDelay() * 1.25 - level.getGiftDelay() * 0.75) + level.getGiftDelay() * 0.75);
+                    
+                    // Check if it's Christmas (24-25 December) for 2x spawn rate
+                    Calendar cal = Calendar.getInstance();
+                    int day = cal.get(Calendar.DAY_OF_MONTH);
+                    int month = cal.get(Calendar.MONTH);
+                    boolean isChristmas = (month == Calendar.DECEMBER && (day == 24 || day == 25));
+                    
+                    // Christmas bonus: 2x spawn rate (half the delay)
+                    long delay = isChristmas ? level.getGiftDelay() / 2 : level.getGiftDelay();
+                    
+                    presentCounter = (long) ((delay * 1.25 - delay * 0.75) + delay * 0.75);
                 }
                 presentCounter--;
             }
@@ -146,6 +156,26 @@ public class MagicTree {
     public boolean tryLevelUp() {
 
         if (level.hasNext()) {
+            // Check if trying to level up to MAGIC_TREE before December 20
+            if (level.nextLevel == TreeLevel.MAGIC_TREE) {
+                Calendar cal = Calendar.getInstance();
+                int day = cal.get(Calendar.DAY_OF_MONTH);
+                int month = cal.get(Calendar.MONTH); // 0-11, DECEMBER = 11
+                
+                // Block MAGIC_TREE before December 20 of current year
+                // Allow after December 20 OR in subsequent years
+                boolean beforeDecember = (month < Calendar.DECEMBER);
+                boolean earlyDecember = (month == Calendar.DECEMBER && day < 20);
+                
+                if (beforeDecember || earlyDecember) {
+                    Player player = getPlayerOwner();
+                    if (player != null) {
+                        player.sendMessage(ChatColor.GOLD + "🎄 Der MAGIC_TREE ist ab dem 20. Dezember verfügbar! 🎄");
+                    }
+                    return false;
+                }
+            }
+            
             if (level.nextLevel.getStructureTemplate().canGrow(location)) {
                 levelUp();
                 return true;
@@ -168,6 +198,19 @@ public class MagicTree {
         }
         build();
         save();
+        
+        // Check if reached MAGIC_TREE level
+        if (this.level == TreeLevel.MAGIC_TREE) {
+            PlayerStats stats = StatsManager.getPlayerStats(owner);
+            stats.recordMagicTreeReached();
+            StatsManager.savePlayerStats(stats);
+            
+            // Check achievement
+            Player player = getPlayerOwner();
+            if (player != null) {
+                AchievementManager.checkAndUnlock(player, Achievement.MAX_LEVEL);
+            }
+        }
     }
 
     public void unbuild() {

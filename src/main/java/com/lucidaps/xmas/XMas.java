@@ -1,7 +1,7 @@
 package com.lucidaps.xmas;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.Chunk;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -9,11 +9,14 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.profile.PlayerTextures;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import org.jetbrains.annotations.Nullable;
 import com.lucidaps.xmas.utils.LocationUtils;
 import com.lucidaps.xmas.utils.TextUtils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +35,15 @@ class XMas {
         trees.put(tree.getTreeUID(), tree);
         trees_byChunk.computeIfAbsent(LocationUtils.getChunkKey(tree.getLocation()), aLong -> new ArrayList<>()).add(tree);
         tree.save();
+        
+        // Track stats
+        PlayerStats stats = StatsManager.getPlayerStats(player.getUniqueId());
+        stats.incrementTreesPlanted();
+        StatsManager.savePlayerStats(stats);
+        
+        // Check achievements
+        AchievementManager.checkAndUnlock(player, Achievement.FIRST_TREE);
+        AchievementManager.checkAndUnlock(player, Achievement.TREE_MASTER);
     }
 
     public static void addMagicTree(MagicTree tree) {
@@ -53,6 +65,11 @@ class XMas {
         TreeSerializer.removeTree(tree);
         trees.remove(tree.getTreeUID());
         trees_byChunk.remove(LocationUtils.getChunkKey(tree.getLocation()));
+        
+        // Update stats
+        PlayerStats stats = StatsManager.getPlayerStats(tree.getOwner());
+        stats.decrementCurrentTreeCount();
+        StatsManager.savePlayerStats(stats);
     }
 
     public static void processPresent(Block block, Player player) {
@@ -60,24 +77,81 @@ class XMas {
             Skull skull = (Skull) block.getState();
             PlayerProfile profile = skull.getPlayerProfile();
 
-            if (profile != null && profile.getTextures() != null) {
-                String skinUrl = profile.getTextures().getSkin().toString();
+            if (profile != null) {
+                PlayerTextures textures = profile.getTextures();
+                if (textures != null && textures.getSkin() != null) {
+                    String skinUrl = textures.getSkin().toString();
 
-                if (Main.getHeads().contains(skinUrl)) {
-                    Location loc = block.getLocation();
-                    World world = loc.getWorld();
-                    if (world != null) {
-                        if (RANDOM.nextFloat() < Main.LUCK_CHANCE || !Main.LUCK_CHANCE_ENABLED) {
-                            world.dropItemNaturally(loc, new ItemStack(Main.gifts.get(RANDOM.nextInt(Main.gifts.size()))));
-                            Effects.TREE_SWAG.playEffect(loc);
-                            TextUtils.sendMessage(player, LocaleManager.GIFT_LUCK);
-                        } else {
-                            Effects.SMOKE.playEffect(loc);
-                            world.dropItemNaturally(loc, new ItemStack(Material.COAL));
-                            TextUtils.sendMessage(player, LocaleManager.GIFT_FAIL);
+                    if (Main.getHeads().contains(skinUrl)) {
+                        Location loc = block.getLocation();
+                        World world = loc.getWorld();
+                        if (world != null) {
+                            PlayerStats stats = StatsManager.getPlayerStats(player.getUniqueId());
+                            
+                            // Check cooldown: max 1 gift per hour
+                            long currentTime = System.currentTimeMillis();
+                            long lastGiftTime = stats.getLastGiftTimestamp();
+                            long cooldownMillis = 60 * 60 * 1000; // 1 hour in milliseconds
+                            
+                            if (lastGiftTime > 0 && (currentTime - lastGiftTime) < cooldownMillis) {
+                                long remainingMinutes = (cooldownMillis - (currentTime - lastGiftTime)) / 60000;
+                                player.sendMessage(ChatColor.RED + "⏰ Du kannst nur 1 Geschenk pro Stunde öffnen! Warte noch " 
+                                    + remainingMinutes + " Minute(n).");
+                                // Don't remove the present, let them try again later
+                                return;
+                            }
+                            
+                            ItemStack gift;
+                            boolean isGoodGift;
+                            
+                            // Check if it's Christmas (24-25 December)
+                            Calendar cal = Calendar.getInstance();
+                            int day = cal.get(Calendar.DAY_OF_MONTH);
+                            int month = cal.get(Calendar.MONTH);
+                            boolean isChristmas = (month == Calendar.DECEMBER && (day == 24 || day == 25));
+                            
+                            // Guaranteed legendary on Christmas if not received yet
+                            if (isChristmas && !stats.hasReceivedChristmasLegendary()) {
+                                gift = GiftManager.getChristmasLegendaryGift(RANDOM);
+                                isGoodGift = true;
+                                stats.setHasReceivedChristmasLegendary(true);
+                                player.sendMessage(ChatColor.GOLD + "🎄 " + ChatColor.BOLD + "FROHE WEIHNACHTEN!" + ChatColor.GOLD + " Du erhältst ein legendäres Geschenk! 🎁");
+                            } else {
+                                // 2x spawn rate on Christmas (handled in MagicTree)
+                                // Normal weighted gift system
+                                if (RANDOM.nextFloat() < Main.LUCK_CHANCE || !Main.LUCK_CHANCE_ENABLED) {
+                                    gift = GiftManager.getRandomWeightedGift(RANDOM);
+                                    isGoodGift = GiftManager.isGoodGift(gift);
+                                    
+                                    if (isGoodGift) {
+                                        stats.recordGoodGift();
+                                        GiftRarity rarity = GiftManager.determineRarity(gift);
+                                        Effects.TREE_SWAG.playEffect(loc);
+                                        TextUtils.sendMessage(player, ChatColor.GREEN + "Du hast ein " + rarity.getDisplayName() + ChatColor.GREEN + " Geschenk erhalten!");
+                                        
+                                        // Check achievements
+                                        AchievementManager.checkAndUnlock(player, Achievement.LUCKY_STREAK);
+                                        AchievementManager.checkAndUnlock(player, Achievement.GIFT_COLLECTOR);
+                                    } else {
+                                        stats.recordBadGift();
+                                        Effects.SMOKE.playEffect(loc);
+                                        TextUtils.sendMessage(player, LocaleManager.GIFT_FAIL);
+                                    }
+                                } else {
+                                    gift = new ItemStack(Material.COAL);
+                                    isGoodGift = false;
+                                    stats.recordBadGift();
+                                    Effects.SMOKE.playEffect(loc);
+                                    TextUtils.sendMessage(player, LocaleManager.GIFT_FAIL);
+                                }
+                            }
+                            
+                            // Remove block AFTER processing to prevent exploits
+                            block.setType(Material.AIR);
+                            world.dropItemNaturally(loc, gift);
+                            StatsManager.savePlayerStats(stats);
                         }
                     }
-                    block.setType(Material.AIR);
                 }
             }
         }
