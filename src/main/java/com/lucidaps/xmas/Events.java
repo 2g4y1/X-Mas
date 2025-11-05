@@ -252,6 +252,10 @@ class Events implements Listener {
             switch (block.getType()) {
                 case SPRUCE_LOG:
                     if (player.getUniqueId().equals(tree.getOwner()) || player.hasPermission("xmas.admin")) {
+                        if (!player.isSneaking()) {
+                            TextUtils.sendMessage(player, ChatColor.YELLOW + "⚠ Halte SHIFT und klicke erneut, um den Baum abzureißen!");
+                            return;
+                        }
                         if (Main.inProgress)
                             if (destroyers.containsKey(player.getUniqueId()) && System.currentTimeMillis() - destroyers.get(player.getUniqueId()) <= 10000) {
                                 XMas.removeTree(tree);
@@ -282,6 +286,10 @@ class Events implements Listener {
                     break;
                 case SPRUCE_SAPLING:
                     if (player.getUniqueId().equals(tree.getOwner()) || player.hasPermission("xmas.admin")) {
+                        if (!player.isSneaking()) {
+                            TextUtils.sendMessage(player, ChatColor.YELLOW + "⚠ Halte SHIFT und klicke erneut, um den Baum abzureißen!");
+                            return;
+                        }
                         if (Main.inProgress) {
                             if (destroyers.containsKey(player.getUniqueId()) && System.currentTimeMillis() - destroyers.get(player.getUniqueId()) <= 10000) {
                                 XMas.removeTree(tree);
