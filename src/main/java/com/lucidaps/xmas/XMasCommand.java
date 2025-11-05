@@ -38,6 +38,10 @@ public class XMasCommand implements CommandExecutor, TabCompleter {
                     sendHelpMessage(sender);
                     break;
                 case "give":
+                    if (!sender.hasPermission("xmas.admin")) {
+                        sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+                        return true;
+                    }
                     if (args.length > 1) {
                         String name = args[1];
                         Player player = Bukkit.getPlayer(name);
@@ -52,9 +56,17 @@ public class XMasCommand implements CommandExecutor, TabCompleter {
                     }
                     break;
                 case "end":
+                    if (!sender.hasPermission("xmas.admin")) {
+                        sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+                        return true;
+                    }
                     plugin.end();
                     break;
                 case "gifts":
+                    if (!sender.hasPermission("xmas.admin")) {
+                        sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+                        return true;
+                    }
                     Random random = new Random();
                     for (MagicTree magicTree : XMas.getAllTrees()) {
                         for (int i = 0; i < 3 + random.nextInt(4); i++) {
@@ -138,16 +150,26 @@ public class XMasCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
-        List<String> subCommands = Arrays.asList("help", "give", "end", "gifts", "reload", "addhand", "stats", "top", "achievements", "gui");
+        
+        // Base commands for all players
+        List<String> baseCommands = Arrays.asList("help", "stats", "top", "achievements", "gui");
+        
+        // Admin commands
+        List<String> adminCommands = Arrays.asList("give", "end", "gifts", "reload", "addhand");
+        
+        List<String> allCommands = new ArrayList<>(baseCommands);
+        if (sender.hasPermission("xmas.admin")) {
+            allCommands.addAll(adminCommands);
+        }
 
         if (args.length == 1) {
-            for (String subCommand : subCommands) {
+            for (String subCommand : allCommands) {
                 if (subCommand.startsWith(args[0].toLowerCase())) {
                     completions.add(subCommand);
                 }
             }
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("give")) {
+            if (args[0].equalsIgnoreCase("give") && sender.hasPermission("xmas.admin")) {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.getName().toLowerCase().startsWith(args[1].toLowerCase())) {
                         completions.add(player.getName());
