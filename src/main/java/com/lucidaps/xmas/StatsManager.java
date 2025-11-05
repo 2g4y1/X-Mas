@@ -13,9 +13,14 @@ public class StatsManager {
     private static File statsFile;
 
     public static void initialize(File dataFolder) {
+        if (dataFolder == null || !dataFolder.exists()) {
+            dataFolder = new File("plugins/X-Mas");
+            dataFolder.mkdirs();
+        }
         statsFile = new File(dataFolder, "player_stats.yml");
         if (!statsFile.exists()) {
             try {
+                statsFile.getParentFile().mkdirs();
                 statsFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -50,6 +55,10 @@ public class StatsManager {
     }
 
     public static void saveAllStats() {
+        if (statsFile == null) {
+            return; // Plugin not properly initialized
+        }
+        
         FileConfiguration config = new YamlConfiguration();
         
         for (PlayerStats stats : playerStatsMap.values()) {

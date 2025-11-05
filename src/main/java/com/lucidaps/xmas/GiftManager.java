@@ -19,13 +19,15 @@ public class GiftManager {
     }
 
     private static void initializeDefaultGifts() {
-        // COMMON (70%)
+        // COMMON (70%) - Always includes 5 snowballs
         addGift(GiftRarity.COMMON, new ItemStack(Material.IRON_INGOT, 4));
         addGift(GiftRarity.COMMON, new ItemStack(Material.GOLD_INGOT, 2));
         addGift(GiftRarity.COMMON, new ItemStack(Material.REDSTONE, 16));
         addGift(GiftRarity.COMMON, new ItemStack(Material.LAPIS_LAZULI, 8));
         addGift(GiftRarity.COMMON, new ItemStack(Material.COAL, 32));
         addGift(GiftRarity.COMMON, new ItemStack(Material.COPPER_INGOT, 8));
+        addGift(GiftRarity.COMMON, new ItemStack(Material.COOKIE, 16));
+        addGift(GiftRarity.COMMON, new ItemStack(Material.SNOWBALL, 5));
 
         // RARE (20%)
         addGift(GiftRarity.RARE, new ItemStack(Material.DIAMOND, 2));
@@ -33,6 +35,7 @@ public class GiftManager {
         addGift(GiftRarity.RARE, new ItemStack(Material.GOLD_BLOCK, 1));
         addGift(GiftRarity.RARE, new ItemStack(Material.IRON_BLOCK, 2));
         addGift(GiftRarity.RARE, new ItemStack(Material.ENCHANTED_BOOK, 1));
+        addGift(GiftRarity.RARE, new ItemStack(Material.SNOWBALL, 5));
 
         // EPIC (8%)
         addGift(GiftRarity.EPIC, new ItemStack(Material.DIAMOND, 8));
@@ -40,6 +43,8 @@ public class GiftManager {
         addGift(GiftRarity.EPIC, new ItemStack(Material.NETHERITE_SCRAP, 2));
         addGift(GiftRarity.EPIC, new ItemStack(Material.DIAMOND_BLOCK, 2));
         addGift(GiftRarity.EPIC, new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 1));
+        addGift(GiftRarity.EPIC, new ItemStack(Material.BELL, 1));
+        addGift(GiftRarity.EPIC, new ItemStack(Material.SNOWBALL, 5));
 
         // LEGENDARY (2%)
         addGift(GiftRarity.LEGENDARY, new ItemStack(Material.NETHERITE_INGOT, 1));
@@ -47,6 +52,7 @@ public class GiftManager {
         addGift(GiftRarity.LEGENDARY, new ItemStack(Material.EMERALD_BLOCK, 3));
         addGift(GiftRarity.LEGENDARY, new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 3));
         addGift(GiftRarity.LEGENDARY, new ItemStack(Material.ELYTRA, 1));
+        addGift(GiftRarity.LEGENDARY, new ItemStack(Material.SNOWBALL, 5));
     }
 
     public static void addGift(GiftRarity rarity, ItemStack item) {

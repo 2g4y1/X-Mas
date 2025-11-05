@@ -88,15 +88,17 @@ class XMas {
                         if (world != null) {
                             PlayerStats stats = StatsManager.getPlayerStats(player.getUniqueId());
                             
-                            // Check cooldown: max 1 gift per hour
+                            // Check cooldown: max 1 gift per 3 hours
                             long currentTime = System.currentTimeMillis();
                             long lastGiftTime = stats.getLastGiftTimestamp();
-                            long cooldownMillis = 60 * 60 * 1000; // 1 hour in milliseconds
+                            long cooldownMillis = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
                             
                             if (lastGiftTime > 0 && (currentTime - lastGiftTime) < cooldownMillis) {
                                 long remainingMinutes = (cooldownMillis - (currentTime - lastGiftTime)) / 60000;
-                                player.sendMessage(ChatColor.RED + "⏰ Du kannst nur 1 Geschenk pro Stunde öffnen! Warte noch " 
-                                    + remainingMinutes + " Minute(n).");
+                                long remainingHours = remainingMinutes / 60;
+                                long remainingMins = remainingMinutes % 60;
+                                player.sendMessage(ChatColor.RED + "⏰ Du kannst nur alle 3 Stunden ein Geschenk öffnen! Warte noch " 
+                                    + remainingHours + "h " + remainingMins + "min.");
                                 // Don't remove the present, let them try again later
                                 return;
                             }

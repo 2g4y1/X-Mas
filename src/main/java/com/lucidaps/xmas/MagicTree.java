@@ -319,8 +319,7 @@ public class MagicTree {
             Chest chest = (Chest) bl.getState();
             Inventory inv = chest.getInventory();
 
-            inv.addItem(new ItemStack(Material.DIAMOND, 4));
-            inv.addItem(new ItemStack(Material.EMERALD, 1));
+            // Return invested upgrade materials only (no bonus items)
             TreeLevel cLevel = TreeLevel.SAPLING;
             while (cLevel != level) {
                 if (cLevel.getLevelupRequirements() != null && cLevel.getLevelupRequirements().size() > 0) {
