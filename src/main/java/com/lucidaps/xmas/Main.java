@@ -139,7 +139,19 @@ public class Main extends JavaPlugin implements Listener {
                 getServer().addRecipe(grinderRecipe);
         } catch (Exception ignored) {
         }
-        XMasCommand.register(this);
+        
+        // Register command
+        try {
+            if (getCommand("xmas") != null) {
+                XMasCommand.register(this);
+            } else {
+                getLogger().severe("Failed to register command 'xmas' - command not found in plugin.yml!");
+            }
+        } catch (Exception e) {
+            getLogger().severe("Failed to register XMasCommand: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         TextUtils.sendConsoleMessage(LocaleManager.PLUGIN_ENABLED);
     }
 

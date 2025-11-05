@@ -106,11 +106,12 @@ class XMas {
                             ItemStack gift;
                             boolean isGoodGift;
                             
-                            // Check if it's Christmas (24-25 December)
+                            // Check dates
                             Calendar cal = Calendar.getInstance();
                             int day = cal.get(Calendar.DAY_OF_MONTH);
                             int month = cal.get(Calendar.MONTH);
                             boolean isChristmas = (month == Calendar.DECEMBER && (day == 24 || day == 25));
+                            boolean isBeforeDecember10 = (month < Calendar.DECEMBER) || (month == Calendar.DECEMBER && day < 10);
                             
                             // Guaranteed legendary on Christmas if not received yet
                             if (isChristmas && !stats.hasReceivedChristmasLegendary()) {
@@ -125,11 +126,23 @@ class XMas {
                                     gift = GiftManager.getRandomWeightedGift(RANDOM);
                                     isGoodGift = GiftManager.isGoodGift(gift);
                                     
+                                    // Before December 10: halve item amounts
+                                    if (isBeforeDecember10 && gift != null) {
+                                        int currentAmount = gift.getAmount();
+                                        int halvedAmount = Math.max(1, currentAmount / 2);
+                                        gift.setAmount(halvedAmount);
+                                    }
+                                    
                                     if (isGoodGift) {
                                         stats.recordGoodGift();
                                         GiftRarity rarity = GiftManager.determineRarity(gift);
                                         Effects.TREE_SWAG.playEffect(loc);
-                                        TextUtils.sendMessage(player, ChatColor.GREEN + "Du hast ein " + rarity.getDisplayName() + ChatColor.GREEN + " Geschenk erhalten!");
+                                        
+                                        String message = ChatColor.GREEN + "Du hast ein " + rarity.getDisplayName() + ChatColor.GREEN + " Geschenk erhalten!";
+                                        if (isBeforeDecember10) {
+                                            message += ChatColor.YELLOW + " (Halbe Menge vor dem 10. Dezember)";
+                                        }
+                                        TextUtils.sendMessage(player, message);
                                         
                                         // Check achievements
                                         AchievementManager.checkAndUnlock(player, Achievement.LUCKY_STREAK);
