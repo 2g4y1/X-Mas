@@ -290,7 +290,7 @@ public class Main extends JavaPlugin implements Listener {
     private void saveDefaults() {
         this.saveDefaultConfig();
         plugin.saveResource("locales/default.yml", true);
-        ArrayList<String> defaults = Lists.newArrayList("locales/en.yml", "locales/ru.yml", "locales/ru_santa.yml", "trees.yml");
+        ArrayList<String> defaults = Lists.newArrayList("locales/en.yml", "locales/de.yml", "locales/ru.yml", "locales/ru_santa.yml", "trees.yml");
         for (String path : defaults)
             if (!new File(getDataFolder(), '/' + path).exists()) plugin.saveResource(path, false);
     }
